@@ -48,7 +48,8 @@ const rto = [
 // gallery images from `public/` (update filenames if you rename files there)
 const galleryFiles = Array.from({ length: 25 }, (_, i) => `photo${i + 1}.webp`);
 
-const gallery = galleryFiles.map((f, i) => ({ label: `Photo ${i + 1}`, src: `/${f}` }));
+const publicAsset = (filename) => `${import.meta.env.BASE_URL}${filename}`;
+const gallery = galleryFiles.map((f, i) => ({ label: `Photo ${i + 1}`, src: publicAsset(f) }));
 
 function GallerySlider({ items = [] }) {
   const [index, setIndex] = useState(0);
@@ -238,10 +239,10 @@ END:VCARD`;
   };
 
   const promos = [
-    { text: 'प्रशिक्षित ड्रायव्हर्स उज्ज्वल भविष्यासाठी', img: '/photo1.webp' },
-    { text: 'सुरक्षित ड्रायव्हिंग सुखी भविष्य', img: '/photo2.webp' },
-    { text: 'RTO कामे जलद व विश्वासार्ह', img: '/photo3.webp' },
-    { text: 'योग्य दरात उत्तम सेवा', img: '/photo4.webp' }
+    { text: 'प्रशिक्षित ड्रायव्हर्स उज्ज्वल भविष्यासाठी', img: publicAsset('photo1.webp') },
+    { text: 'सुरक्षित ड्रायव्हिंग सुखी भविष्य', img: publicAsset('photo2.webp') },
+    { text: 'RTO कामे जलद व विश्वासार्ह', img: publicAsset('photo3.webp') },
+    { text: 'योग्य दरात उत्तम सेवा', img: publicAsset('photo4.webp') }
   ];
 
   return <div className="page-shell">
