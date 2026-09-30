@@ -564,6 +564,38 @@ select {
     color: #fff;
 }
 
+.lightbox-zoom {
+    position: absolute;
+    bottom: -82px;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: min(320px, calc(100vw - 72px));
+    padding: 8px 12px;
+    transform: translateX(-50%);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font-size: 13px;
+}
+
+.lightbox-zoom input {
+    flex: 1;
+    min-width: 0;
+    accent-color: #fff;
+}
+
+@media (max-width: 640px) {
+    .lightbox-nav.prev {
+        left: 8px;
+    }
+
+    .lightbox-nav.next {
+        right: 8px;
+    }
+}
+
 .payment-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -657,7 +689,8 @@ form button {
     padding: 9px;
     display: grid;
     place-items: center;
-    gap: 5px
+    gap: 5px;
+    cursor: pointer;
 }
 
 .share-actions svg {

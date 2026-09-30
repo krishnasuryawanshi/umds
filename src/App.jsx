@@ -9,16 +9,13 @@ import { useState, useEffect, useRef } from 'react';
 import { getSupabaseClient } from './lib/supabase';
 import logo from './assets/logo.png';
 import topBanner from './assets/top-banner.png';
-import phonepeQr from './assets/phonepe.png';
-import gpayQr from './assets/gpay.png';
-import paytmQr from './assets/paytm.png';
 
-const phone = '9096588881';
+const phone = '9096588881 / 8208059630';
 const whatsappText = encodeURIComponent('नमस्कार, मला ड्रायव्हिंग प्रशिक्षणाबद्दल माहिती हवी आहे.');
 const mapsUrl = 'https://www.google.com/maps/place/Unhawane+driving+school/@19.9639329,73.7757324,113m/data=!3m1!1e3!4m6!3m5!1s0x3bddeb0f43e43651:0x933fa225c8940eaa!8m2!3d19.9640647!4d73.7754864!16s%2Fg%2F11rnbsh4j2?entry=ttu&g_ep=EgoyMDI2MDkxNS4wIKXMDSoASAFQAw%3D%3D';
 const mapsEmbed = 'https://www.google.com/maps?q=19.9640647,73.7754864&z=17&output=embed';
 const facebookUrl = 'https://www.facebook.com/share/1ZaToeJmru/';
-const instagramUrl = 'https://www.instagram.com/unhavane_driving_school/';
+const instagramUrl = 'https://www.instagram.com/lucky__themaster?stkn=emFjOWhpemkzeTJp';
 
 const ActionButton = ({ href, icon, children, className = '' }) => (
   <a className={`action-btn ${className}`} href={href} target="_blank" rel="noreferrer">{icon}{children}</a>
@@ -50,6 +47,11 @@ const galleryFiles = Array.from({ length: 25 }, (_, i) => `photo${i + 1}.webp`);
 
 const publicAsset = (filename) => `${import.meta.env.BASE_URL}${filename}`;
 const gallery = galleryFiles.map((f, i) => ({ label: `Photo ${i + 1}`, src: publicAsset(f) }));
+const paymentQrs = [
+  { label: 'PhonePe QR', src: publicAsset('qr-phonpay.webp') },
+  { label: 'Google Pay QR', src: publicAsset('qr-gpay.webp') },
+  { label: 'Paytm QR', src: publicAsset('qr-paytm.webp') }
+];
 
 function GallerySlider({ items = [] }) {
   const [index, setIndex] = useState(0);
@@ -129,22 +131,28 @@ function GallerySlider({ items = [] }) {
   );
 }
 
-function Lightbox({ items = [], startIndex = 0, onClose }) {
+function Lightbox({ items = [], startIndex = 0, onClose, zoomable = false }) {
   const [idx, setIdx] = useState(startIndex);
+  const [zoom, setZoom] = useState(1);
   const touchStart = useRef(null);
   const touchDelta = useRef(0);
 
   useEffect(() => setIdx(startIndex), [startIndex]);
+  useEffect(() => setZoom(1), [idx]);
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (zoomable && e.target instanceof HTMLInputElement && e.target.type === 'range') return;
       if (e.key === 'ArrowLeft') setIdx(i => (i - 1 + items.length) % items.length);
       if (e.key === 'ArrowRight') setIdx(i => (i + 1) % items.length);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [items.length, onClose]);
+  }, [items.length, onClose, zoomable]);
 
   if (!items || items.length === 0) return null;
 
@@ -174,12 +182,18 @@ function Lightbox({ items = [], startIndex = 0, onClose }) {
 
   return (
     <div className="lightbox" onClick={onClose}>
-      <div className="lightbox-content" onClick={e => e.stopPropagation()} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      <div className="lightbox-content" role="dialog" aria-modal="true" aria-label={`${items[idx].label} viewer`} onClick={e => e.stopPropagation()} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <button className="lightbox-close" onClick={onClose} aria-label="Close">×</button>
         <button className="lightbox-nav prev" onClick={prev} aria-label="Previous">‹</button>
-        <img src={encodeURI(items[idx].src)} alt={items[idx].label} className="lightbox-image" />
+        <img src={encodeURI(items[idx].src)} alt={items[idx].label} className="lightbox-image" style={zoomable ? { transform: `scale(${zoom})`, maxHeight: '70vh' } : undefined} />
         <button className="lightbox-nav next" onClick={next} aria-label="Next">›</button>
         <div className="lightbox-caption">{items[idx].label} — {idx + 1}/{items.length}</div>
+        {zoomable && (
+          <label className="lightbox-zoom">
+            <span>Zoom {zoom.toFixed(1)}x</span>
+            <input type="range" min="1" max="2.5" step="0.1" value={zoom} aria-label="Zoom QR code" onChange={e => setZoom(Number(e.target.value))} />
+          </label>
+        )}
       </div>
     </div>
   );
@@ -189,6 +203,8 @@ function Lightbox({ items = [], startIndex = 0, onClose }) {
 export function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalIndex, setModalIndex] = useState(0);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [qrModalIndex, setQrModalIndex] = useState(0);
 
   useEffect(() => {
     const handler = (e) => {
@@ -200,6 +216,10 @@ export function App() {
     window.addEventListener('gallery-open', handler);
     return () => window.removeEventListener('gallery-open', handler);
   }, []);
+  const openQr = (index) => {
+    setQrModalIndex(index);
+    setQrModalOpen(true);
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -222,7 +242,7 @@ VERSION:3.0
 FN:उन्हवने मोटर ड्रायव्हिंग स्कूल
 TEL;TYPE=WORK,VOICE:${phone}
 EMAIL:unhavanemotorschool@gmail.com
-ADR:;;शॉप नं. 4, वैष्णवी आर्केड, शांतिनगर हॉटेल जवळ, हसमताळी रोड, पंचवटी, नाशिक - 422003;India
+ADR:;;शॉप नंबर २, गुरुदत्त आपारमेंट, सिमेंस कॉलनी रोड, सदिच्छा नगर, नाशिक ४२२००९;India
 NOTE:उन्हवने मोटर ड्रायव्हिंग स्कूल - Driving School
 END:VCARD`;
 
@@ -251,7 +271,7 @@ END:VCARD`;
         <div className="image-banner">
           <img src={topBanner} alt="उन्हवने मोटर ड्रायव्हिंग स्कूल लोगो" />
         </div>
-        <div className="since">Since - 2010</div>
+        <div className="since">Since - 2021</div>
         {/* <div className="brand-top">
           <img src={logo} alt="उन्हवने मोटर ड्रायव्हिंग स्कूल लोगो" />
           <h1>उन्हवने मोटर<br/>ड्रायव्हिंग स्कूल</h1>
@@ -264,7 +284,7 @@ END:VCARD`;
           <ActionButton className="email" href="mailto:unhavanemotorschool@gmail.com" icon={<FaEnvelope />}>Email</ActionButton>
         </div>
         <div className="contact-box">
-          <p><FaMapMarkerAlt /> शॉप नं. 4, वैष्णवी आर्केड, शांतिनगर हॉटेल जवळ, हसमताळी रोड, पंचवटी, नाशिक - 422003</p>
+          <p><FaMapMarkerAlt /> शॉप नंबर २, गुरुदत्त आपारमेंट, सिमेंस कॉलनी रोड, सदिच्छा नगर, नाशिक - ४२२००९</p>
           <p><FaPhoneAlt /> <a href={`tel:${phone}`}>{phone}</a></p>
           <p><FaEnvelope /> unhavanemotorschool@gmail.com</p>
           <p><FaClock /> सकाळी 7.00 ते रात्री 9.00</p>
@@ -381,10 +401,28 @@ END:VCARD`;
       <section id="payment" className="panel">
         <SectionTitle>PAYMENT</SectionTitle>
         <div className="payment-grid">
-          {[['PhonePe', phonepeQr], ['Google Pay', gpayQr], ['Paytm', paytmQr]].map(([name, qr]) => <div key={name}><b>{name}</b><small>Scan & Pay</small><img src={qr} alt={`${name} QR`} /></div>)}
+          {paymentQrs.map((qr, index) =>
+          <div key={qr.label}>
+            <b>{qr.label.replace(' QR', '')}</b>
+            <small>Scan & Pay</small>
+            <img
+              src={qr.src}
+              alt={qr.label}
+              role="button"
+              tabIndex={0}
+              onClick={() => openQr(index)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openQr(index);
+                }
+              }}
+            />
+          </div>)}
         </div>
         <div className="upi">UPI ID : 9096588881@upi</div>
       </section>
+      {qrModalOpen && <Lightbox items={paymentQrs} startIndex={qrModalIndex} onClose={() => setQrModalOpen(false)} zoomable />}
 
       <section className="panel">
         <SectionTitle>CUSTOMER REVIEWS</SectionTitle>
@@ -403,8 +441,12 @@ END:VCARD`;
 
       <section className="panel share-card">
         <SectionTitle>SHARE THIS CARD</SectionTitle>
-        <div className="share-actions"><button onClick={share}><FaShareAlt />Share</button><button><FaQrcode />QR Code</button><button><FaDownload />Save Card</button></div>
-        <div className="share-url">https://yourdomain.com/unhavane-school</div>
+        <div className="share-actions">
+          <button onClick={share}><FaShareAlt />Share</button>
+          <button onClick={() => document.getElementById('payment')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}><FaQrcode />QR Code</button>
+          <button onClick={() => downloadVCard('unhavane-card.vcf')}><FaDownload /> Save Card</button>
+        </div>
+        {/* <div className="share-url">https://yourdomain.com/unhavane-school</div> */}
       </section>
     </main>
 
